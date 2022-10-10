@@ -1,0 +1,8 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <version>1.0</version>
+    <artifactId>password-validator-app</artifactId>
+    <packaging>jar</packaging>
+    <name>password-validator-app</name>
+</project>
