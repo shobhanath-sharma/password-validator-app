@@ -23,7 +23,7 @@ public class PasswordValidatorFacadeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "abcdefgh", "1234567h", "Abcd1234", "Ab", "A@#a12"})
+    @ValueSource(strings = {"abcdefgh", "1234567h", "Abcd1234", "Ab"})
     public void shouldValidatePasswordWithCorrectInput(String inputString) {
         boolean result = passwordValidatorFacade.isValid(inputString);
         assertThat(result).isTrue();

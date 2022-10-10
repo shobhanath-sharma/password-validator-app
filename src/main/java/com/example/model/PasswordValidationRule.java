@@ -33,7 +33,7 @@ public enum PasswordValidationRule {
         this.regex = regex;
     }
 
-    public boolean isValidPassword(String password, List<PasswordValidationException> passwordValidationExceptions) {
+    public boolean isValid(String password, List<PasswordValidationException> passwordValidationExceptions) {
         if (password == null) {
             passwordValidationExceptions.add(new PasswordValidationException(this.id + ":" + "password should not be null"));
         }

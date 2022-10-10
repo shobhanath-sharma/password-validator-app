@@ -47,7 +47,7 @@ public class PasswordValidationServiceImpl implements PasswordValidationService 
                 filter(passwordValidationRule -> {
                     boolean result = (trueCounter.get() <= numberOfRulesApplied) &&
                             (falseCounter.get() <= stopIfNumberOfFailureReached) &&
-                            passwordValidationRule.isValidPassword(password, passwordValidationExceptions);
+                            passwordValidationRule.isValid(password, passwordValidationExceptions);
                     if (result) {
                         trueCounter.incrementAndGet();
                     } else {
@@ -72,7 +72,7 @@ public class PasswordValidationServiceImpl implements PasswordValidationService 
                 filter(ruleId -> {
                     boolean result = (trueCounter.get() <= mandatoryRuleId.size()) &&
                             (falseCounter.get() <= stopIfNumberOfFailureReached) &&
-                            Stream.of(allPasswordRules).anyMatch(rule -> (ruleId == rule.getId()) && rule.isValidPassword(password, passwordValidationExceptions));
+                            Stream.of(allPasswordRules).anyMatch(rule -> (ruleId == rule.getId()) && rule.isValid(password, passwordValidationExceptions));
                     if (result) {
                         trueCounter.incrementAndGet();
                     } else {
@@ -101,7 +101,7 @@ public class PasswordValidationServiceImpl implements PasswordValidationService 
                         boolean result = (trueCounter.get() <= numberOfRulesApplied) &&
                                 (falseCounter.get() <= stopIfNumberOfFailureReached) &&
                                 !mandatoryRuleId.contains(passwordValidationRule.getId()) &&
-                                passwordValidationRule.isValidPassword(password, passwordValidationExceptions);
+                                passwordValidationRule.isValid(password, passwordValidationExceptions);
                         if (result) {
                             trueCounter.incrementAndGet();
                         } else {

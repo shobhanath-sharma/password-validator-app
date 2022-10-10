@@ -52,35 +52,35 @@ public class PasswordValidationRuleTest {
     @Test
     public void shouldTestPasswordNotNull() {
         List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
-        assertThat(PASSWORD_NON_NULL.isValidPassword("A", passwordValidationExceptions)).isTrue();
+        assertThat(PASSWORD_NON_NULL.isValid("A", passwordValidationExceptions)).isTrue();
         assertThat(passwordValidationExceptions).isEmpty();
     }
 
     @Test
     public void shouldTestPasswordHaveOneUpperCaseLetterAtLeast() {
         List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
-        assertThat(PASSWORD_WITH_UPPER_CASE_LETTER.isValidPassword("A", passwordValidationExceptions)).isTrue();
+        assertThat(PASSWORD_WITH_UPPER_CASE_LETTER.isValid("A", passwordValidationExceptions)).isTrue();
         assertThat(passwordValidationExceptions).isEmpty();
     }
 
     @Test
     public void shouldTestPasswordHaveOneLowerCaseLetterAtLeast() {
         List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
-        assertThat(PASSWORD_WITH_LOWER_CASE_LETTER.isValidPassword("a", passwordValidationExceptions)).isTrue();
+        assertThat(PASSWORD_WITH_LOWER_CASE_LETTER.isValid("a", passwordValidationExceptions)).isTrue();
         assertThat(passwordValidationExceptions).isEmpty();
     }
 
     @Test
     public void shouldTestPasswordHaveOneNumericValueAtLeast() {
         List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
-        assertThat(PASSWORD_WITH_NUMBERIC.isValidPassword("A1b", passwordValidationExceptions)).isTrue();
+        assertThat(PASSWORD_WITH_NUMBERIC.isValid("A1b", passwordValidationExceptions)).isTrue();
         assertThat(passwordValidationExceptions).isEmpty();
     }
 
     @Test
     public void shouldTestPasswordLargerThan8Chars() {
         List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
-        assertThat(PASSWORD_AT_LEAST_8_CHARS.isValidPassword("abcdefgh", passwordValidationExceptions)).isTrue();
+        assertThat(PASSWORD_AT_LEAST_8_CHARS.isValid("abcdefgh", passwordValidationExceptions)).isTrue();
         assertThat(passwordValidationExceptions).isEmpty();
     }
 
@@ -90,35 +90,35 @@ public class PasswordValidationRuleTest {
         List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
         switch (passwordValidationRule) {
             case PASSWORD_AT_LEAST_8_CHARS:
-                assertThat(passwordValidationRule.isValidPassword("Test", passwordValidationExceptions)).isFalse();
+                assertThat(passwordValidationRule.isValid("Test", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
                     throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
                         .hasMessageContaining("password should be larger than 8 chars");
                 break;
             case PASSWORD_NON_NULL:
-                assertThat(passwordValidationRule.isValidPassword("", passwordValidationExceptions)).isFalse();
+                assertThat(passwordValidationRule.isValid("", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
                     throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
                         .hasMessageContaining("password should not be null");
                 break;
             case PASSWORD_WITH_UPPER_CASE_LETTER:
-                assertThat(passwordValidationRule.isValidPassword("a123", passwordValidationExceptions)).isFalse();
+                assertThat(passwordValidationRule.isValid("a123", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
                     throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
                         .hasMessageContaining("password should have one uppercase letter at least");
                 break;
             case PASSWORD_WITH_LOWER_CASE_LETTER:
-                assertThat(passwordValidationRule.isValidPassword("T123", passwordValidationExceptions)).isFalse();
+                assertThat(passwordValidationRule.isValid("T123", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
                     throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
                         .hasMessageContaining("password should have one lowercase letter at least");
                 break;
             case PASSWORD_WITH_NUMBERIC:
-                assertThat(passwordValidationRule.isValidPassword("test", passwordValidationExceptions)).isFalse();
+                assertThat(passwordValidationRule.isValid("test", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
                     throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
