@@ -60,12 +60,13 @@ public class PasswordValidationServiceImpl implements PasswordValidationService 
                                                                                   List<Integer> mandatoryRuleId,
                                                                                   PasswordValidationRule[] allPasswordRules,
                                                                                   List<PasswordValidationException> passwordValidationExceptions) {
-        long mandatoryPasswordValidatedCount = mandatoryRuleId.stream().
-                filter(ruleId -> Stream.of(allPasswordRules).anyMatch(rule -> (ruleId == rule.getId()) && rule.isValidPassword(password, passwordValidationExceptions))).
-                count();
-        long passwordValidatedCount = Stream.of(allPasswordRules).
-                filter(passwordValidationRule -> !mandatoryRuleId.contains(passwordValidationRule.getId()) && passwordValidationRule.isValidPassword(password, passwordValidationExceptions)).
-                count();
-        return (mandatoryPasswordValidatedCount >= mandatoryRuleId.size() && passwordValidatedCount >= numberOfRulesApplied);
+        boolean mandatoryValidationResult = applyValidationWithOnlyMandatoryRules(password, mandatoryRuleId, allPasswordRules, passwordValidationExceptions);
+        if (mandatoryValidationResult) {
+            long passwordValidatedCount = Stream.of(allPasswordRules).
+                    filter(passwordValidationRule -> !mandatoryRuleId.contains(passwordValidationRule.getId()) && passwordValidationRule.isValidPassword(password, passwordValidationExceptions)).
+                    count();
+            return (passwordValidatedCount >= numberOfRulesApplied);
+        }
+        return mandatoryValidationResult;
     }
 }
