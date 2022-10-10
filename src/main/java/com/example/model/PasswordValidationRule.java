@@ -1,5 +1,7 @@
 package com.example.model;
 
+import com.example.exception.PasswordValidationException;
+
 public enum PasswordValidationRule {
     PASSWORD_AT_LEAST_8_CHARS(1, "password should be larger than 8 chars", "^\\w{8,}$"),
     PASSWORD_NON_NULL(2, "password should not be null", "^\\w{1,}$"),
@@ -30,6 +32,13 @@ public enum PasswordValidationRule {
     }
 
     public boolean isValidPassword(String password) {
-        return false;
+        if (password == null) {
+            throw new PasswordValidationException(this.id + ":" + "password should not be null");
+        }
+        boolean result = password.matches(this.regex);
+        if (!result) {
+            throw new PasswordValidationException(this.id + ":" + this.ruleDescription);
+        }
+        return result;
     }
 }
