@@ -5,6 +5,7 @@ import com.example.model.PasswordValidationRule;
 import com.example.service.PasswordValidationService;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class PasswordValidationServiceImpl implements PasswordValidationService {
@@ -23,49 +24,94 @@ public class PasswordValidationServiceImpl implements PasswordValidationService 
                 !mandatoryRuleId.isEmpty() &&
                 numberOfRulesApplied > mandatoryRuleId.size()) {
             numberOfRulesApplied = (numberOfRulesApplied - mandatoryRuleId.size());
-            return applyValidationWithNoOfRulesSpecifiedAndMandatoryRules(password, numberOfRulesApplied, mandatoryRuleId, allPasswordRules, passwordValidationExceptions);
+            return applyValidationOnNumberOfRulesAndMandatoryRules(password, numberOfRulesApplied, mandatoryRuleId, allPasswordRules, passwordValidationExceptions);
         }
         // Consider only mandatoryRuleId
         else if (mandatoryRuleId != null && !mandatoryRuleId.isEmpty()) {
-            return applyValidationWithOnlyMandatoryRules(password, mandatoryRuleId, allPasswordRules, passwordValidationExceptions);
+            return applyValidationOnMandatoryRules(password, mandatoryRuleId, allPasswordRules, passwordValidationExceptions);
         }
         //consider only numberOfRulesApplied
         else {
-            return applyValidationWithOnlyNoOfRulesSpecified(password, numberOfRulesApplied, allPasswordRules, passwordValidationExceptions);
+            return applyValidationOnNumbersOfRulesSpecified(password, numberOfRulesApplied, allPasswordRules, passwordValidationExceptions);
         }
     }
 
-    private static boolean applyValidationWithOnlyNoOfRulesSpecified(String password,
-                                                                     int numberOfRulesApplied,
-                                                                     PasswordValidationRule[] allPasswordRules,
-                                                                     List<PasswordValidationException> passwordValidationExceptions) {
+    private static boolean applyValidationOnNumbersOfRulesSpecified(String password,
+                                                                    int numberOfRulesApplied,
+                                                                    PasswordValidationRule[] allPasswordRules,
+                                                                    List<PasswordValidationException> passwordValidationExceptions) {
+        AtomicInteger trueCounter = new AtomicInteger();
+        AtomicInteger falseCounter = new AtomicInteger();
+        int stopIfNumberOfFailureReached = (allPasswordRules.length) - (numberOfRulesApplied);
         long passwordValidatedCount = Stream.of(allPasswordRules).
-                filter(passwordValidationRule -> passwordValidationRule.isValidPassword(password, passwordValidationExceptions)).
+                filter(passwordValidationRule -> {
+                    boolean result = (trueCounter.get() <= numberOfRulesApplied) &&
+                            (falseCounter.get() <= stopIfNumberOfFailureReached) &&
+                            passwordValidationRule.isValidPassword(password, passwordValidationExceptions);
+                    if (result) {
+                        trueCounter.incrementAndGet();
+                    } else {
+                        falseCounter.incrementAndGet();
+                    }
+                    return result;
+                }).
+                filter(passwordValidationRule -> numberOfRulesApplied == trueCounter.get()).
                 count();
         return (passwordValidatedCount >= numberOfRulesApplied);
     }
 
-    private static boolean applyValidationWithOnlyMandatoryRules(String password,
-                                                                 List<Integer> mandatoryRuleId,
-                                                                 PasswordValidationRule[] allPasswordRules,
-                                                                 List<PasswordValidationException> passwordValidationExceptions) {
+    private static boolean applyValidationOnMandatoryRules(String password,
+                                                           List<Integer> mandatoryRuleId,
+                                                           PasswordValidationRule[] allPasswordRules,
+                                                           List<PasswordValidationException> passwordValidationExceptions) {
+        AtomicInteger trueCounter = new AtomicInteger();
+        AtomicInteger falseCounter = new AtomicInteger();
+        int stopIfNumberOfFailureReached = (allPasswordRules.length) - (mandatoryRuleId.size());
+
         long passwordValidatedCount = mandatoryRuleId.stream().
-                filter(ruleId -> Stream.of(allPasswordRules).anyMatch(rule -> (ruleId == rule.getId()) && rule.isValidPassword(password, passwordValidationExceptions))).
+                filter(ruleId -> {
+                    boolean result = (trueCounter.get() <= mandatoryRuleId.size()) &&
+                            (falseCounter.get() <= stopIfNumberOfFailureReached) &&
+                            Stream.of(allPasswordRules).anyMatch(rule -> (ruleId == rule.getId()) && rule.isValidPassword(password, passwordValidationExceptions));
+                    if (result) {
+                        trueCounter.incrementAndGet();
+                    } else {
+                        falseCounter.incrementAndGet();
+                    }
+                    return result;
+                }).
+                filter(passwordValidationRule -> mandatoryRuleId.size() == trueCounter.get()).
                 count();
-        return (passwordValidatedCount >= mandatoryRuleId.size());
+        return (passwordValidatedCount == 1);
     }
 
-    private static boolean applyValidationWithNoOfRulesSpecifiedAndMandatoryRules(String password,
-                                                                                  int numberOfRulesApplied,
-                                                                                  List<Integer> mandatoryRuleId,
-                                                                                  PasswordValidationRule[] allPasswordRules,
-                                                                                  List<PasswordValidationException> passwordValidationExceptions) {
-        boolean mandatoryValidationResult = applyValidationWithOnlyMandatoryRules(password, mandatoryRuleId, allPasswordRules, passwordValidationExceptions);
+    private static boolean applyValidationOnNumberOfRulesAndMandatoryRules(String password,
+                                                                           int numberOfRulesApplied,
+                                                                           List<Integer> mandatoryRuleId,
+                                                                           PasswordValidationRule[] allPasswordRules,
+                                                                           List<PasswordValidationException> passwordValidationExceptions) {
+        boolean mandatoryValidationResult = applyValidationOnMandatoryRules(password, mandatoryRuleId, allPasswordRules, passwordValidationExceptions);
         if (mandatoryValidationResult) {
+            AtomicInteger trueCounter = new AtomicInteger();
+            AtomicInteger falseCounter = new AtomicInteger();
+            int stopIfNumberOfFailureReached = (allPasswordRules.length) - (numberOfRulesApplied + mandatoryRuleId.size());
+
             long passwordValidatedCount = Stream.of(allPasswordRules).
-                    filter(passwordValidationRule -> !mandatoryRuleId.contains(passwordValidationRule.getId()) && passwordValidationRule.isValidPassword(password, passwordValidationExceptions)).
+                    filter(passwordValidationRule -> {
+                        boolean result = (trueCounter.get() <= numberOfRulesApplied) &&
+                                (falseCounter.get() <= stopIfNumberOfFailureReached) &&
+                                !mandatoryRuleId.contains(passwordValidationRule.getId()) &&
+                                passwordValidationRule.isValidPassword(password, passwordValidationExceptions);
+                        if (result) {
+                            trueCounter.incrementAndGet();
+                        } else {
+                            falseCounter.incrementAndGet();
+                        }
+                        return result;
+                    }).
+                    filter(passwordValidationRule -> numberOfRulesApplied == trueCounter.get()).
                     count();
-            return (passwordValidatedCount >= numberOfRulesApplied);
+            return (passwordValidatedCount == 1);
         }
         return mandatoryValidationResult;
     }
