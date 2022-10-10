@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.example.model.PasswordValidationRule.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -48,68 +51,80 @@ public class PasswordValidationRuleTest {
 
     @Test
     public void shouldTestPasswordNotNull() {
-        PasswordValidationRule passwordValidationRule = PASSWORD_NON_NULL;
-        assertThat(passwordValidationRule.isValidPassword("A")).isTrue();
+        List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
+        assertThat(PASSWORD_NON_NULL.isValidPassword("A", passwordValidationExceptions)).isTrue();
+        assertThat(passwordValidationExceptions).isEmpty();
     }
 
     @Test
     public void shouldTestPasswordHaveOneUpperCaseLetterAtLeast() {
-        PasswordValidationRule passwordValidationRule = PASSWORD_WITH_UPPER_CASE_LETTER;
-        assertThat(passwordValidationRule.isValidPassword("A")).isTrue();
+        List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
+        assertThat(PASSWORD_WITH_UPPER_CASE_LETTER.isValidPassword("A", passwordValidationExceptions)).isTrue();
+        assertThat(passwordValidationExceptions).isEmpty();
     }
 
     @Test
     public void shouldTestPasswordHaveOneLowerCaseLetterAtLeast() {
-        PasswordValidationRule passwordValidationRule = PASSWORD_WITH_LOWER_CASE_LETTER;
-        assertThat(passwordValidationRule.isValidPassword("a")).isTrue();
+        List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
+        assertThat(PASSWORD_WITH_LOWER_CASE_LETTER.isValidPassword("a", passwordValidationExceptions)).isTrue();
+        assertThat(passwordValidationExceptions).isEmpty();
     }
 
     @Test
     public void shouldTestPasswordHaveOneNumericValueAtLeast() {
-        PasswordValidationRule passwordValidationRule = PASSWORD_WITH_NUMBERIC;
-        assertThat(passwordValidationRule.isValidPassword("A1b")).isTrue();
+        List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
+        assertThat(PASSWORD_WITH_NUMBERIC.isValidPassword("A1b", passwordValidationExceptions)).isTrue();
+        assertThat(passwordValidationExceptions).isEmpty();
     }
 
     @Test
     public void shouldTestPasswordLargerThan8Chars() {
-        PasswordValidationRule passwordValidationRule = PASSWORD_AT_LEAST_8_CHARS;
-        assertThat(passwordValidationRule.isValidPassword("abcdefgh")).isTrue();
+        List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
+        assertThat(PASSWORD_AT_LEAST_8_CHARS.isValidPassword("abcdefgh", passwordValidationExceptions)).isTrue();
+        assertThat(passwordValidationExceptions).isEmpty();
     }
 
     @ParameterizedTest
     @EnumSource(PasswordValidationRule.class)
     void shouldThrowExceptionWhenPasswordRuleDoesNotPassGivenPassword(PasswordValidationRule passwordValidationRule) {
+        List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
         switch (passwordValidationRule) {
             case PASSWORD_AT_LEAST_8_CHARS:
+                assertThat(passwordValidationRule.isValidPassword("Test", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
-                    passwordValidationRule.isValidPassword("Test");
+                    throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
                         .hasMessageContaining("password should be larger than 8 chars");
                 break;
             case PASSWORD_NON_NULL:
+                assertThat(passwordValidationRule.isValidPassword("", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
-                    passwordValidationRule.isValidPassword("");
+                    throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
                         .hasMessageContaining("password should not be null");
                 break;
             case PASSWORD_WITH_UPPER_CASE_LETTER:
+                assertThat(passwordValidationRule.isValidPassword("a123", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
-                    passwordValidationRule.isValidPassword("a123");
+                    throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
                         .hasMessageContaining("password should have one uppercase letter at least");
                 break;
             case PASSWORD_WITH_LOWER_CASE_LETTER:
+                assertThat(passwordValidationRule.isValidPassword("T123", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
-                    passwordValidationRule.isValidPassword("T123");
+                    throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
                         .hasMessageContaining("password should have one lowercase letter at least");
                 break;
             case PASSWORD_WITH_NUMBERIC:
+                assertThat(passwordValidationRule.isValidPassword("test", passwordValidationExceptions)).isFalse();
                 assertThatThrownBy(() -> {
-                    passwordValidationRule.isValidPassword("test");
+                    throw passwordValidationExceptions.get(0);
                 }).isInstanceOf(PasswordValidationException.class)
                         .hasMessageContaining("password should have one number at least");
                 break;
+
             default:
                 fail("Unknown enums and not yet declared in test class");
         }
