@@ -18,7 +18,8 @@ public class PasswordValidationServiceTest {
 
     @Test
     public void shouldPasswordValidForGivenNumberOfRulesAndAlsoMandatoryRule() {
-        boolean result = passwordValidationService.isValid("password", 3, Collections.singletonList(4));
+        // This test case will use 3 validation rule including password in lower letter
+        boolean result = passwordValidationService.isValid("passwor1Ad", 3, Collections.singletonList(4));
         assertThat(result).isTrue();
     }
 }
