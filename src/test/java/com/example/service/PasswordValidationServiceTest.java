@@ -24,6 +24,5 @@ public class PasswordValidationServiceTest {
         List<PasswordValidationException> passwordValidationExceptions = new ArrayList<>();
         boolean result = passwordValidationService.isValid("password", 3, Collections.singletonList(4), passwordValidationExceptions);
         assertThat(result).isTrue();
-        assertThat(passwordValidationExceptions).isEmpty();
     }
 }
